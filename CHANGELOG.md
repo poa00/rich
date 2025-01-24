@@ -5,6 +5,97 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [13.9.4] - 2024-11-01
+
+### Changed
+
+- Optimizations to cell_len which may speed up Rich / Textual output https://github.com/Textualize/rich/pull/3546
+
+## [13.9.3] - 2024-10-22
+
+### Fixed
+
+- Fixed broken regex that may have resulted in poor performance. https://github.com/Textualize/rich/pull/3535
+
+## [13.9.2] - 2024-10-04
+
+### Fixed
+
+- Fixed `Table` columns not highlighting when added by `add_row` https://github.com/Textualize/rich/issues/3517
+- Fixed an issue with Segment.split_cells reported in Textual https://github.com/Textualize/textual/issues/5090
+
+## [13.9.1] - 2024-10-01
+
+### Fixed
+
+- Fixed typing_extensions dependency
+
+## [13.9.0] - 2024-10-01
+
+### Changed
+
+- Dropped support for Python3.7 https://github.com/Textualize/rich/pull/3509
+- Rich will display tracebacks with finely grained error locations on python 3.11+ https://github.com/Textualize/rich/pull/3486
+
+### Fixed
+
+- Fixed issue with Segment._split_cells https://github.com/Textualize/rich/pull/3506
+- Fix auto detection of terminal size on Windows https://github.com/Textualize/rich/pull/2916
+- `Text.style` now respected in Panel title/subtitle https://github.com/Textualize/rich/pull/3509
+
+## [13.8.1] - 2024-09-10
+
+### Fixed
+
+- Added support for Python 3.13 https://github.com/Textualize/rich/pull/3481
+- Fixed infinite loop when appending Text to same instance https://github.com/Textualize/rich/pull/3480
+
+## [13.8.0] - 2024-08-26
+
+### Fixed
+
+- Fixed `Table` rendering of box elements so "footer" elements truly appear at bottom of table, "mid" elements in main table body.
+- Fixed styles in Panel when Text objects are used for title https://github.com/Textualize/rich/pull/3401
+- Fix pretty repr for `collections.deque` https://github.com/Textualize/rich/pull/2864
+- Thread used in progress.track will exit if an exception occurs in a generator https://github.com/Textualize/rich/pull/3402
+- Progress track thread is now a daemon thread https://github.com/Textualize/rich/pull/3402
+- Fixed cached hash preservation upon clearing meta and links https://github.com/Textualize/rich/issues/2942
+- Fixed overriding the `background_color` of `Syntax` not including padding https://github.com/Textualize/rich/issues/3295
+- Fixed pretty printing of dataclasses with a default repr in Python 3.13 https://github.com/Textualize/rich/pull/3455
+- Fixed selective enabling of highlighting when disabled in the `Console` https://github.com/Textualize/rich/issues/3419
+- Fixed BrokenPipeError writing an error message https://github.com/Textualize/rich/pull/3468
+- Fixed superfluous space above Markdown tables https://github.com/Textualize/rich/pull/3469
+- Fixed issue with record and capture interaction https://github.com/Textualize/rich/pull/3470
+- Fixed control codes breaking in `append_tokens` https://github.com/Textualize/rich/pull/3471
+- Fixed exception pretty printing a dataclass with missing fields https://github.com/Textualize/rich/pull/3472
+
+### Changed
+
+- `RichHandler` errors and warnings will now use different colors (red and yellow) https://github.com/Textualize/rich/issues/2825
+- Removed the empty line printed in jupyter while using `Progress` https://github.com/Textualize/rich/pull/2616
+- Running tests in environment with `FORCE_COLOR` or `NO_COLOR` environment variables
+- ansi decoder will now strip problematic private escape sequences (like `\x1b7`) https://github.com/Textualize/rich/pull/3278/
+- Tree's ASCII_GUIDES and TREE_GUIDES constants promoted to class attributes
+- `rich.Text.highlight_regex` now accepts a regular expression object https://github.com/Textualize/rich/pull/3347
+
+### Added
+
+- Adds a `case_sensitive` parameter to `prompt.Prompt`. This determines if the
+  response is treated as case-sensitive. Defaults to `True`.
+- Added `Console.on_broken_pipe` https://github.com/Textualize/rich/pull/3468
+
+## [13.7.1] - 2024-02-28
+
+
+### Fixed
+
+- Updated the widths of some characters https://github.com/Textualize/rich/pull/3289
+
+### Added
+
+- Included a `name` attribute to the `Spinner` class https://github.com/Textualize/rich/pull/3359
+
 ## [13.7.0] - 2023-11-15
 
 ### Added
@@ -63,7 +154,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Text.tab_size now defaults to `None` to indicate that Console.tab_size should be used.
 
-
 ## [13.4.2] - 2023-06-12
 
 ### Changed
@@ -117,6 +207,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Polish README
+
 
 ### Changed
 
@@ -2019,6 +2110,14 @@ Major version bump for a breaking change to `Text.stylize signature`, which corr
 
 - First official release, API still to be stabilized
 
+[13.9.4]: https://github.com/textualize/rich/compare/v13.9.3...v13.9.4
+[13.9.3]: https://github.com/textualize/rich/compare/v13.9.2...v13.9.3
+[13.9.2]: https://github.com/textualize/rich/compare/v13.9.1...v13.9.2
+[13.9.1]: https://github.com/textualize/rich/compare/v13.9.0...v13.9.1
+[13.9.0]: https://github.com/textualize/rich/compare/v13.8.1...v13.9.0
+[13.8.1]: https://github.com/textualize/rich/compare/v13.8.0...v13.8.1
+[13.8.0]: https://github.com/textualize/rich/compare/v13.7.1...v13.8.0
+[13.7.1]: https://github.com/textualize/rich/compare/v13.7.0...v13.7.1
 [13.7.0]: https://github.com/textualize/rich/compare/v13.6.0...v13.7.0
 [13.6.0]: https://github.com/textualize/rich/compare/v13.5.3...v13.6.0
 [13.5.3]: https://github.com/textualize/rich/compare/v13.5.2...v13.5.3

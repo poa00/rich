@@ -1,6 +1,7 @@
 import datetime
 import io
 import os
+import subprocess
 import sys
 import tempfile
 from typing import Optional, Tuple, Type, Union
@@ -29,6 +30,8 @@ from rich.segment import Segment
 from rich.status import Status
 from rich.style import Style
 from rich.text import Text
+
+os.get_terminal_size
 
 
 def test_dumb_terminal():
@@ -139,7 +142,7 @@ def test_size():
     "is_windows,no_descriptor_size,stdin_size,stdout_size,stderr_size,expected_size",
     [
         # on Windows we'll use `os.get_terminal_size()` without arguments...
-        (True, (133, 24), ValueError, ValueError, ValueError, (133, 24)),
+        (True, (133, 24), ValueError, ValueError, ValueError, (80, 25)),
         (False, (133, 24), ValueError, ValueError, ValueError, (80, 25)),
         # ...while on other OS we'll try to pass stdin, then stdout, then stderr to it:
         (False, ValueError, (133, 24), ValueError, ValueError, (133, 24)),
@@ -156,8 +159,8 @@ def test_size_can_fall_back_to_std_descriptors(
     stdin_size: Union[Tuple[int, int], Type[ValueError]],
     stdout_size: Union[Tuple[int, int], Type[ValueError]],
     stderr_size: Union[Tuple[int, int], Type[ValueError]],
-    expected_size,
-):
+    expected_size: Tuple[int, int],
+) -> None:
     def get_terminal_size_mock_impl(fileno: int = None) -> Tuple[int, int]:
         value = {
             None: no_descriptor_size,
@@ -378,23 +381,6 @@ def test_capture():
             capture.get()
         console.print("Hello")
     assert capture.get() == "Hello\n"
-
-
-def test_capture_and_record(capsys):
-    recorder = Console(record=True)
-    recorder.print("ABC")
-
-    with recorder.capture() as capture:
-        recorder.print("Hello")
-
-    assert capture.get() == "Hello\n"
-
-    recorded_text = recorder.export_text()
-    out, err = capsys.readouterr()
-
-    assert recorded_text == "ABC\nHello\n"
-    assert capture.get() == "Hello\n"
-    assert out == "ABC\n"
 
 
 def test_input(monkeypatch, capsys):
@@ -991,3 +977,70 @@ def test_force_color():
         },
     )
     assert console.color_system in ("truecolor", "windows")
+
+
+def test_reenable_highlighting() -> None:
+    """Check that when highlighting is disabled, it can be reenabled in print()"""
+    console = Console(
+        file=io.StringIO(),
+        _environ={
+            "FORCE_COLOR": "1",
+            "TERM": "xterm-256color",
+            "COLORTERM": "truecolor",
+        },
+        highlight=False,
+    )
+    console.print("[1, 2, 3]")
+    console.print("[1, 2, 3]", highlight=True)
+    output = console.file.getvalue()
+    lines = output.splitlines()
+    print(repr(lines))
+    # First line not highlighted
+    assert lines[0] == "[1, 2, 3]"
+    # Second line highlighted
+
+    assert (
+        lines[1]
+        == "\x1b[1m[\x1b[0m\x1b[1;36m1\x1b[0m, \x1b[1;36m2\x1b[0m, \x1b[1;36m3\x1b[0m\x1b[1m]\x1b[0m"
+    )
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="does not run on windows")
+def test_brokenpipeerror() -> None:
+    """Test BrokenPipe works as expected."""
+    which_py, which_head = (["which", cmd] for cmd in ("python", "head"))
+    rich_cmd = "python -m rich".split()
+    for cmd in [which_py, which_head, rich_cmd]:
+        check = subprocess.run(cmd).returncode
+        if check != 0:
+            return  # Only test on suitable Unix platforms
+    head_cmd = "head -1".split()
+    proc1 = subprocess.Popen(rich_cmd, stdout=subprocess.PIPE)
+    proc2 = subprocess.Popen(head_cmd, stdin=proc1.stdout, stdout=subprocess.PIPE)
+    proc1.stdout.close()
+    output, _ = proc2.communicate()
+    proc1.wait()
+    proc2.wait()
+    assert proc1.returncode == 1
+    assert proc2.returncode == 0
+
+
+def test_capture_and_record() -> None:
+    """Regression test for https://github.com/Textualize/rich/issues/2563"""
+
+    console = Console(record=True)
+    print("Before Capture started:")
+    console.print("[blue underline]Print 0")
+    with console.capture() as capture:
+        console.print("[blue underline]Print 1")
+        console.print("[blue underline]Print 2")
+        console.print("[blue underline]Print 3")
+        console.print("[blue underline]Print 4")
+
+    capture_content = capture.get()
+    print(repr(capture_content))
+    assert capture_content == "Print 1\nPrint 2\nPrint 3\nPrint 4\n"
+
+    recorded_content = console.export_text()
+    print(repr(recorded_content))
+    assert recorded_content == "Print 0\n"
